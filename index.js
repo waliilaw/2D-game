@@ -5,20 +5,27 @@ canvas.width = 64 * 16 // 1024
 canvas.height = 64 * 9 // 576
 
 // Background music setup
-const backgroundMusic = new Audio('./public/music.mp3')
-backgroundMusic.loop = true
-backgroundMusic.volume = 0.5 // Set volume to 50%
+window.backgroundMusic = new Audio('./public/Undertale OST_ 003 - Your Best Friend.mp3')
+window.backgroundMusic.loop = true
+window.backgroundMusic.volume = 0.5 // Set volume to 50%
 
 // Function to start background music (needs user interaction)
 function startBackgroundMusic() {
-  backgroundMusic.play().catch(error => {
+  window.backgroundMusic.play().catch(error => {
     console.log('Audio playback failed:', error)
   })
 }
 
+// Try to autoplay music (may be blocked by browser)
+window.addEventListener('DOMContentLoaded', () => {
+  window.backgroundMusic.play().catch(e => {
+    console.log('Autoplay prevented by browser, waiting for user interaction')
+  })
+})
+
 // Add event listener for starting music on first user interaction
 window.addEventListener('click', function() {
-  if (backgroundMusic.paused) {
+  if (window.backgroundMusic.paused) {
     startBackgroundMusic()
   }
 }, { once: true })
@@ -240,9 +247,9 @@ function updateGamblingBoxPosition() {
       gamblingBox.position.x = 200
       gamblingBox.position.y = 350
       break
-    case 2: // Egg room - position near the door
-      gamblingBox.position.x = 772
-      gamblingBox.position.y = 300
+    case 2: // Egg room - position near the door but lower and more to the left
+      gamblingBox.position.x = 720
+      gamblingBox.position.y = 350
       break
     case 3:
       gamblingBox.position.x = 600
@@ -251,11 +258,10 @@ function updateGamblingBoxPosition() {
   }
 }
 
-// Add popup state
-let showWalletPopup = false
-
-// Add variables for confirmation dialog
+// Add variables for popup states
+let showWalletPopup = false;
 let showConfirmationDialog = false;
+let showIntroPopup = true; // Show intro popup by default
 let walletConnected = false;
 
 function animate() {
@@ -300,13 +306,6 @@ function animate() {
   player.draw()
   player.update()
 
-  // Draw room name above player (improved positioning)
-  c.fillStyle = 'white'
-  c.font = '16px "Press Start 2P"'
-  const roomNameText = roomNames[level] || `Room ${level}`
-  const textWidth = c.measureText(roomNameText).width
-  c.fillText(roomNameText, player.position.x - textWidth / 2, player.position.y - 30)
-
   // Check if player is near gambling box
   const distanceToGamblingBox = Math.sqrt(
     Math.pow(player.position.x - gamblingBox.position.x, 2) +
@@ -324,6 +323,79 @@ function animate() {
   } else {
     showWalletPopup = false
     showConfirmationDialog = false
+  }
+
+  // Draw intro popup
+  if (showIntroPopup) {
+    // Create semi-transparent overlay
+    c.fillStyle = 'rgba(0, 0, 0, 0.7)'
+    c.fillRect(0, 0, canvas.width, canvas.height)
+    
+    // Draw popup background
+    c.fillStyle = '#45283c' // Dark purple background
+    c.fillRect(canvas.width/2 - 250, canvas.height/2 - 200, 500, 400)
+    
+    // Draw pixelated border
+    c.fillStyle = '#eec39a' // Light tan color for border
+    
+    // Draw top and bottom borders with pixels
+    for(let x = 0; x < 500; x += 8) {
+      // Top border pixels
+      c.fillRect(canvas.width/2 - 250 + x, canvas.height/2 - 200, 6, 6)
+      // Bottom border pixels
+      c.fillRect(canvas.width/2 - 250 + x, canvas.height/2 + 200 - 6, 6, 6)
+    }
+    
+    // Draw left and right borders with pixels
+    for(let y = 0; y < 400; y += 8) {
+      // Left border pixels
+      c.fillRect(canvas.width/2 - 250, canvas.height/2 - 200 + y, 6, 6)
+      // Right border pixels
+      c.fillRect(canvas.width/2 + 250 - 6, canvas.height/2 - 200 + y, 6, 6)
+    }
+    
+    // Draw title
+    c.fillStyle = '#ffffff'
+    c.font = '24px "Press Start 2P"'
+    let popupTitle = 'Welcome'
+    let textMetrics = c.measureText(popupTitle)
+    c.fillText(popupTitle, canvas.width/2 - textMetrics.width/2, canvas.height/2 - 140)
+    
+    // Draw pixelated line separator
+    c.fillStyle = '#eec39a'
+    for(let x = 0; x < 450; x += 8) {
+      c.fillRect(canvas.width/2 - 225 + x, canvas.height/2 - 110, 6, 2)
+    }
+    
+    // Draw instructions
+    c.fillStyle = '#ffffff'
+    c.font = '14px "Press Start 2P"'
+    
+    const instructions = [
+      'Game Controls:',
+      '- Move with W, A, S, D keys',
+      '- Enter door discover more',
+      '',
+      'Rooms:',
+      '1. Mines ',
+      '2. Egg ',
+      '3. Roulette',
+      ' ',
+      ' ',
+      ' '
+   
+    ]
+    
+    for(let i = 0; i < instructions.length; i++) {
+      c.fillText(instructions[i], canvas.width/2 - 200, canvas.height/2 - 70 + (i * 30))
+    }
+    
+    // Draw call to action
+    c.fillStyle = '#eec39a' // Highlight color
+    c.font = '16px "Press Start 2P"'
+    const ctaText = "Press C to close"
+    textMetrics = c.measureText(ctaText)
+    c.fillText(ctaText, canvas.width/2 - textMetrics.width/2, canvas.height/2 + 160)
   }
 
   // Draw improved wallet connection popup
@@ -355,14 +427,15 @@ function animate() {
       c.fillRect(canvas.width/2 + 200 - 6, canvas.height/2 - 150 + y, 6, 6)
     }
     
-    // Draw title based on current room
+    // Draw title based on current room - with better text handling
     c.fillStyle = '#ffffff'
-    c.font = '20px "Press Start 2P"'
+    c.font = '16px "Press Start 2P"' // Start with smaller font size
     let popupTitle = `Enter ${roomNames[level]}`
     
-    // Handle text overflow by scaling down font if needed
     let textMetrics = c.measureText(popupTitle)
-    if (textMetrics.width > 360) {
+    // If text is still too long, shorten it
+    if (textMetrics.width > 330) {
+      popupTitle = `${roomNames[level]}`;
       c.font = '16px "Press Start 2P"'
       textMetrics = c.measureText(popupTitle)
     }
@@ -375,26 +448,26 @@ function animate() {
       c.fillRect(canvas.width/2 - 175 + x, canvas.height/2 - 50, 6, 2)
     }
     
-    // Draw popup message
+    // Draw popup message with better text handling
     c.fillStyle = '#ffffff'
-    c.font = '16px "Press Start 2P"'
+    c.font = '14px "Press Start 2P"' // Start with smaller font
     let descText
     switch(level) {
       case 1:
-        descText = "Connect wallet to enter Mines game"
+        descText = "Connect wallet for Mines"
         break
       case 2:
-        descText = "Connect wallet to play Egg game"
+        descText = "Connect wallet for Egg"
         break
       case 3:
-        descText = "Connect wallet to play Roulette"
+        descText = "Connect wallet for Roulette"
         break
     }
     
-    // Handle text overflow
     textMetrics = c.measureText(descText)
-    if (textMetrics.width > 360) {
-      c.font = '14px "Press Start 2P"'
+    if (textMetrics.width > 330) {
+      // Further shorten if needed
+      descText = descText.substring(0, 20) + "..."
       textMetrics = c.measureText(descText)
     }
     
@@ -461,15 +534,14 @@ function animate() {
       c.fillRect(canvas.width/2 + 200 - 6, canvas.height/2 - 150 + y, 6, 6)
     }
     
-    // Draw title
+    // Draw title with better text handling
     c.fillStyle = '#ffffff'
-    c.font = '20px "Press Start 2P"'
+    c.font = '16px "Press Start 2P"' // Start with smaller font
     let popupTitle = `Go to ${roomNames[level]}?`
     
-    // Handle text overflow by scaling down font if needed
     let textMetrics = c.measureText(popupTitle)
-    if (textMetrics.width > 360) {
-      c.font = '16px "Press Start 2P"'
+    if (textMetrics.width > 330) {
+      popupTitle = `Play ${roomNames[level]}?`;
       textMetrics = c.measureText(popupTitle)
     }
     
@@ -481,15 +553,15 @@ function animate() {
       c.fillRect(canvas.width/2 - 175 + x, canvas.height/2 - 50, 6, 2)
     }
     
-    // Draw popup message
+    // Draw popup message with better text handling
     c.fillStyle = '#ffffff'
-    c.font = '16px "Press Start 2P"'
-    let descText = `Do you want to play ${roomNames[level]}?`
+    c.font = '14px "Press Start 2P"' // Start with smaller font
+    let descText = `Play ${roomNames[level]} game?`
     
-    // Handle text overflow
     textMetrics = c.measureText(descText)
-    if (textMetrics.width > 360) {
-      c.font = '14px "Press Start 2P"'
+    if (textMetrics.width > 330) {
+      // Shorten if needed
+      descText = `Play ${roomNames[level]}?`
       textMetrics = c.measureText(descText)
     }
     
@@ -581,14 +653,21 @@ function navigateToGame() {
 // Update event listener
 window.addEventListener('keydown', (e) => {
   // Try to start music if paused (first interaction)
-  if (backgroundMusic.paused) {
+  if (window.backgroundMusic.paused) {
     startBackgroundMusic()
   }
   
-  if (showWalletPopup && e.key.toLowerCase() === 'c') {
+  // Close intro popup with C key
+  if (showIntroPopup && e.key.toLowerCase() === 'c') {
+    showIntroPopup = false
+  }
+  // Handle wallet connection popup
+  else if (showWalletPopup && e.key.toLowerCase() === 'c') {
     // Connect Wonder wallet
     connectWonderWallet()
-  } else if (showConfirmationDialog) {
+  } 
+  // Handle confirmation popup
+  else if (showConfirmationDialog) {
     if (e.key.toLowerCase() === 'y') {
       // User confirmed, navigate to game
       navigateToGame()

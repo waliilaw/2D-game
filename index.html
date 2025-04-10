@@ -11,8 +11,8 @@
         html, body {
             margin: 0;
             padding: 0;
-            width: 200%;
-            height: 200%;
+            width: 100%;
+            height: 100%;
             background-color: #000;
             overflow: hidden;
         }
@@ -44,7 +44,7 @@
             padding: 8px 12px;
             cursor: pointer;
             outline: none;
-            margin-right: 10px;
+            margin-left: 10px;
         }
         .musicButton:hover {
             background-color: #854c30;
@@ -59,8 +59,8 @@
 <body>
     <canvas></canvas>
     <div id="controlPanel">
-        <button id="toggleMusic" class="musicButton">Music: ON</button>
         <img src="./img/image.png" class="logo" alt="Logo">
+        <button id="toggleMusic" class="musicButton">Music: ON</button>
     </div>
     <script src="./js/utils.js"></script>
     <script src="./js/data/collisions.js"></script>
@@ -70,16 +70,31 @@
     <script src="./index.js"></script>
     <script src="./js/eventListeners.js"></script>
     <script>
-        // Music toggle functionality
-        const toggleMusicBtn = document.getElementById('toggleMusic');
-        toggleMusicBtn.addEventListener('click', function() {
-            if (backgroundMusic.paused) {
-                backgroundMusic.play();
-                toggleMusicBtn.textContent = 'Music: ON';
-            } else {
-                backgroundMusic.pause();
-                toggleMusicBtn.textContent = 'Music: OFF';
-            }
+        // Music toggle functionality - wait for backgroundMusic to be loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleMusicBtn = document.getElementById('toggleMusic');
+            
+            // Wait a bit to make sure backgroundMusic is initialized in index.js
+            setTimeout(function() {
+                // Music should be ON by default
+                if (window.backgroundMusic) {
+                    window.backgroundMusic.play().catch(e => console.log('Auto-play prevented by browser'));
+                    toggleMusicBtn.textContent = 'Music: ON';
+                }
+                
+                // Add click event listener
+                toggleMusicBtn.addEventListener('click', function() {
+                    if (window.backgroundMusic) {
+                        if (window.backgroundMusic.paused) {
+                            window.backgroundMusic.play();
+                            toggleMusicBtn.textContent = 'Music: ON';
+                        } else {
+                            window.backgroundMusic.pause();
+                            toggleMusicBtn.textContent = 'Music: OFF';
+                        }
+                    }
+                });
+            }, 500);
         });
     </script>
 </body>

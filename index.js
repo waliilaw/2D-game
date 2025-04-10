@@ -181,6 +181,13 @@ const overlay = {
 let isWalletConnected = false
 let hasPaid = false
 
+// Add custom room names
+const roomNames = {
+  1: "Mines",
+  2: "Egg",
+  3: "Roulette"
+}
+
 // Add gambling box position (will be updated based on room)
 const gamblingBox = {
   position: {
@@ -194,16 +201,16 @@ const gamblingBox = {
 function updateGamblingBoxPosition() {
   switch(level) {
     case 1:
-      gamblingBox.position.x = 96
-      gamblingBox.position.y = 140
+      gamblingBox.position.x = 200
+      gamblingBox.position.y = 350
       break
     case 2:
-      gamblingBox.position.x = 96
-      gamblingBox.position.y = 140
+      gamblingBox.position.x = 500
+      gamblingBox.position.y = 250
       break
     case 3:
-      gamblingBox.position.x = 750
-      gamblingBox.position.y = 230
+      gamblingBox.position.x = 600
+      gamblingBox.position.y = 300
       break
   }
 }
@@ -225,23 +232,39 @@ function animate() {
   c.fillStyle = 'black'
   c.fill()
   
-  // Add pixelated effect
-  c.fillStyle = 'rgba(0, 0, 0, 0.5)'
-  for(let i = 0; i < 8; i++) {
-    const angle = (i / 8) * Math.PI * 2
-    const x = gamblingBox.position.x + Math.cos(angle) * gamblingBox.radius
-    const y = gamblingBox.position.y + Math.sin(angle) * gamblingBox.radius
-    c.fillRect(x - 5, y - 5, 10, 10)
+  // Add more detailed pixelated effect
+  for(let i = 0; i < 12; i++) {
+    const angle = (i / 12) * Math.PI * 2
+    const outerRadius = gamblingBox.radius + 5
+    const x = gamblingBox.position.x + Math.cos(angle) * outerRadius
+    const y = gamblingBox.position.y + Math.sin(angle) * outerRadius
+    
+    // Draw pixelated dots around the circle
+    c.fillStyle = 'rgba(0, 0, 0, 0.7)'
+    c.fillRect(x - 3, y - 3, 6, 6)
+  }
+  
+  // Add inner pixelated details
+  for(let i = 0; i < 6; i++) {
+    const angle = (i / 6) * Math.PI * 2
+    const innerRadius = gamblingBox.radius * 0.6
+    const x = gamblingBox.position.x + Math.cos(angle) * innerRadius
+    const y = gamblingBox.position.y + Math.sin(angle) * innerRadius
+    
+    c.fillStyle = 'rgba(50, 50, 50, 0.8)'
+    c.fillRect(x - 2, y - 2, 4, 4)
   }
 
   player.handleInput(keys)
   player.draw()
   player.update()
 
-  // Draw room number above player
+  // Draw room name above player (improved positioning)
   c.fillStyle = 'white'
-  c.font = '20px Arial'
-  c.fillText(`Room ${level}`, player.position.x - 20, player.position.y - 20)
+  c.font = '16px "Press Start 2P"'
+  const roomNameText = roomNames[level] || `Room ${level}`
+  const textWidth = c.measureText(roomNameText).width
+  c.fillText(roomNameText, player.position.x - textWidth / 2, player.position.y - 40)
 
   // Check if player is near gambling box
   const distanceToGamblingBox = Math.sqrt(
@@ -259,26 +282,95 @@ function animate() {
 
   // Draw improved wallet connection popup
   if (showWalletPopup) {
-    // Draw popup background with pixelated border
-    c.fillStyle = 'rgba(0, 0, 0, 0.9)'
-    c.fillRect(250, 150, 500, 300)
+    // Create semi-transparent overlay
+    c.fillStyle = 'rgba(0, 0, 0, 0.7)'
+    c.fillRect(0, 0, canvas.width, canvas.height)
+    
+    // Draw popup background
+    c.fillStyle = '#45283c' // Dark purple background
+    c.fillRect(canvas.width/2 - 200, canvas.height/2 - 150, 400, 300)
     
     // Draw pixelated border
-    c.fillStyle = 'white'
-    for(let i = 0; i < 20; i++) {
-      c.fillRect(250 + i * 25, 150, 10, 10) // Top border
-      c.fillRect(250 + i * 25, 440, 10, 10) // Bottom border
-      c.fillRect(250, 150 + i * 15, 10, 10) // Left border
-      c.fillRect(740, 150 + i * 15, 10, 10) // Right border
+    c.fillStyle = '#eec39a' // Light tan color for border
+    
+    // Draw top and bottom borders with pixels
+    for(let x = 0; x < 400; x += 8) {
+      // Top border pixels
+      c.fillRect(canvas.width/2 - 200 + x, canvas.height/2 - 150, 6, 6)
+      // Bottom border pixels
+      c.fillRect(canvas.width/2 - 200 + x, canvas.height/2 + 150 - 6, 6, 6)
     }
-
-    // Draw text with pixelated style
-    c.fillStyle = 'white'
-    c.font = '24px "Press Start 2P", monospace'
-    c.fillText('Connect Wonder Wallet', 270, 250)
-    c.font = '16px "Press Start 2P", monospace'
-    c.fillText('Press C to connect', 270, 300)
-    c.fillText('and visit gambling site', 270, 350)
+    
+    // Draw left and right borders with pixels
+    for(let y = 0; y < 300; y += 8) {
+      // Left border pixels
+      c.fillRect(canvas.width/2 - 200, canvas.height/2 - 150 + y, 6, 6)
+      // Right border pixels
+      c.fillRect(canvas.width/2 + 200 - 6, canvas.height/2 - 150 + y, 6, 6)
+    }
+    
+    // Draw title based on current room
+    c.fillStyle = '#ffffff'
+    c.font = '20px "Press Start 2P"'
+    let popupTitle = `Enter ${roomNames[level]}`
+    let textMetrics = c.measureText(popupTitle)
+    c.fillText(popupTitle, canvas.width/2 - textMetrics.width/2, canvas.height/2 - 80)
+    
+    // Draw pixelated line separator
+    c.fillStyle = '#eec39a'
+    for(let x = 0; x < 350; x += 8) {
+      c.fillRect(canvas.width/2 - 175 + x, canvas.height/2 - 50, 6, 2)
+    }
+    
+    // Draw popup message
+    c.fillStyle = '#ffffff'
+    c.font = '16px "Press Start 2P"'
+    let descText
+    switch(level) {
+      case 1:
+        descText = "Connect wallet to enter Mines game"
+        break
+      case 2:
+        descText = "Connect wallet to play Egg game"
+        break
+      case 3:
+        descText = "Connect wallet to play Roulette"
+        break
+    }
+    
+    textMetrics = c.measureText(descText)
+    c.fillText(descText, canvas.width/2 - textMetrics.width/2, canvas.height/2)
+    
+    // Draw call to action
+    c.fillStyle = '#eec39a' // Highlight color
+    c.font = '14px "Press Start 2P"'
+    const ctaText = "Press C to connect"
+    textMetrics = c.measureText(ctaText)
+    c.fillText(ctaText, canvas.width/2 - textMetrics.width/2, canvas.height/2 + 60)
+    
+    // Draw pixelated button
+    const buttonWidth = 180
+    const buttonHeight = 40
+    c.fillStyle = '#854c30' // Button background
+    c.fillRect(canvas.width/2 - buttonWidth/2, canvas.height/2 + 90, buttonWidth, buttonHeight)
+    
+    // Button border pixels
+    c.fillStyle = '#d95763' // Bright accent for button
+    for(let x = 0; x < buttonWidth; x += 6) {
+      c.fillRect(canvas.width/2 - buttonWidth/2 + x, canvas.height/2 + 90, 4, 4)
+      c.fillRect(canvas.width/2 - buttonWidth/2 + x, canvas.height/2 + 90 + buttonHeight - 4, 4, 4)
+    }
+    for(let y = 0; y < buttonHeight; y += 6) {
+      c.fillRect(canvas.width/2 - buttonWidth/2, canvas.height/2 + 90 + y, 4, 4)
+      c.fillRect(canvas.width/2 - buttonWidth/2 + buttonWidth - 4, canvas.height/2 + 90 + y, 4, 4)
+    }
+    
+    // Draw button text
+    c.fillStyle = '#ffffff'
+    c.font = '14px "Press Start 2P"'
+    const buttonText = "CONNECT"
+    textMetrics = c.measureText(buttonText)
+    c.fillText(buttonText, canvas.width/2 - textMetrics.width/2, canvas.height/2 + 90 + buttonHeight/2 + 5)
   }
 
   c.save()
@@ -295,6 +387,20 @@ animate()
 // Wonder wallet connection function
 async function connectWonderWallet() {
   try {
+    // Update redirection URL based on room
+    let redirectUrl = "https://your-gambling-app-url.com"
+    switch(level) {
+      case 1:
+        redirectUrl = "https://your-mines-game-url.com"
+        break
+      case 2:
+        redirectUrl = "https://your-egg-game-url.com"
+        break
+      case 3:
+        redirectUrl = "https://your-roulette-game-url.com"
+        break
+    }
+    
     // Check if Wonder wallet is available
     if (typeof window.ethereum === 'undefined') {
       alert('Please install Wonder Wallet extension first!')
@@ -307,7 +413,7 @@ async function connectWonderWallet() {
     if (accounts && accounts.length > 0) {
       isWalletConnected = true
       showWalletPopup = false
-      window.location.href = 'https://your-gambling-app-url.com'
+      window.location.href = redirectUrl
     } else {
       throw new Error('Failed to get wallet accounts')
     }

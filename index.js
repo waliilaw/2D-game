@@ -612,7 +612,7 @@ function animate() {
   
   // Top border
   for(let x = 0; x < canvas.width; x += pixelSize) {
-    c.fillRect(x, 0, pixelSize - 1, borderWidth);
+    c.fillRect(x, 0, pixelSize - 3, borderWidth);
   }
   
   // Bottom border

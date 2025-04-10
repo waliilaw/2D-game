@@ -604,6 +604,31 @@ function animate() {
   c.fillStyle = 'black'
   c.fillRect(0, 0, canvas.width, canvas.height)
   c.restore()
+  
+  // Draw pixelated white border around the entire canvas
+  const borderWidth = 6;
+  const pixelSize = 12;
+  c.fillStyle = 'grey';
+  
+  // Top border
+  for(let x = 0; x < canvas.width; x += pixelSize) {
+    c.fillRect(x, 0, pixelSize - 1, borderWidth);
+  }
+  
+  // Bottom border
+  for(let x = 0; x < canvas.width; x += pixelSize) {
+    c.fillRect(x, canvas.height - borderWidth, pixelSize - 1, borderWidth);
+  }
+  
+  // Left border
+  for(let y = 0; y < canvas.height; y += pixelSize) {
+    c.fillRect(0, y, borderWidth, pixelSize - 1);
+  }
+  
+  // Right border
+  for(let y = 0; y < canvas.height; y += pixelSize) {
+    c.fillRect(canvas.width - borderWidth, y, borderWidth, pixelSize - 1);
+  }
 }
 
 // Wonder wallet connection function

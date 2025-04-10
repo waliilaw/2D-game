@@ -177,34 +177,62 @@ const overlay = {
   opacity: 0,
 }
 
-// Add gambling box position
+// Add Arweave wallet state
+let isWalletConnected = false
+let hasPaid = false
+
+// Add gambling box position (will be updated based on room)
 const gamblingBox = {
   position: {
-    x: 400,
-    y: 300,
+    x: 0,
+    y: 0,
   },
-  width: 50,
-  height: 50,
+  radius: 25, // For circular shape
+}
+
+// Update gambling box position based on room
+function updateGamblingBoxPosition() {
+  switch(level) {
+    case 1:
+      gamblingBox.position.x = 96
+      gamblingBox.position.y = 140
+      break
+    case 2:
+      gamblingBox.position.x = 96
+      gamblingBox.position.y = 140
+      break
+    case 3:
+      gamblingBox.position.x = 750
+      gamblingBox.position.y = 230
+      break
+  }
 }
 
 // Add popup state
-let showGamblingPopup = false
+let showWalletPopup = false
 
 function animate() {
   window.requestAnimationFrame(animate)
 
   background.draw()
-  // collisionBlocks.forEach((collisionBlock) => {
-  //   collisionBlock.draw()
-  // })
-
   doors.forEach((door) => {
     door.draw()
   })
 
-  // Draw gambling box
-  c.fillStyle = 'rgba(255, 255, 0, 0.5)'
-  c.fillRect(gamblingBox.position.x, gamblingBox.position.y, gamblingBox.width, gamblingBox.height)
+  // Draw circular gambling box with pixelated style
+  c.beginPath()
+  c.arc(gamblingBox.position.x, gamblingBox.position.y, gamblingBox.radius, 0, Math.PI * 2)
+  c.fillStyle = 'black'
+  c.fill()
+  
+  // Add pixelated effect
+  c.fillStyle = 'rgba(0, 0, 0, 0.5)'
+  for(let i = 0; i < 8; i++) {
+    const angle = (i / 8) * Math.PI * 2
+    const x = gamblingBox.position.x + Math.cos(angle) * gamblingBox.radius
+    const y = gamblingBox.position.y + Math.sin(angle) * gamblingBox.radius
+    c.fillRect(x - 5, y - 5, 10, 10)
+  }
 
   player.handleInput(keys)
   player.draw()
@@ -222,19 +250,35 @@ function animate() {
   )
 
   if (distanceToGamblingBox < 100) {
-    showGamblingPopup = true
+    if (!isWalletConnected) {
+      showWalletPopup = true
+    }
   } else {
-    showGamblingPopup = false
+    showWalletPopup = false
   }
 
-  // Draw gambling popup if player is near
-  if (showGamblingPopup) {
-    c.fillStyle = 'rgba(0, 0, 0, 0.8)'
-    c.fillRect(300, 200, 400, 200)
+  // Draw improved wallet connection popup
+  if (showWalletPopup) {
+    // Draw popup background with pixelated border
+    c.fillStyle = 'rgba(0, 0, 0, 0.9)'
+    c.fillRect(250, 150, 500, 300)
+    
+    // Draw pixelated border
     c.fillStyle = 'white'
-    c.font = '24px Arial'
-    c.fillText('Do you want to go to the mines gambling app?', 320, 250)
-    c.fillText('Press Y to continue', 320, 300)
+    for(let i = 0; i < 20; i++) {
+      c.fillRect(250 + i * 25, 150, 10, 10) // Top border
+      c.fillRect(250 + i * 25, 440, 10, 10) // Bottom border
+      c.fillRect(250, 150 + i * 15, 10, 10) // Left border
+      c.fillRect(740, 150 + i * 15, 10, 10) // Right border
+    }
+
+    // Draw text with pixelated style
+    c.fillStyle = 'white'
+    c.font = '24px "Press Start 2P", monospace'
+    c.fillText('Connect Wonder Wallet', 270, 250)
+    c.font = '16px "Press Start 2P", monospace'
+    c.fillText('Press C to connect', 270, 300)
+    c.fillText('and visit gambling site', 270, 350)
   }
 
   c.save()
@@ -245,11 +289,38 @@ function animate() {
 }
 
 levels[level].init()
+updateGamblingBoxPosition()
 animate()
 
-// Add event listener for gambling popup
+// Wonder wallet connection function
+async function connectWonderWallet() {
+  try {
+    // Check if Wonder wallet is available
+    if (typeof window.ethereum === 'undefined') {
+      alert('Please install Wonder Wallet extension first!')
+      return
+    }
+
+    // Request wallet connection
+    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
+    
+    if (accounts && accounts.length > 0) {
+      isWalletConnected = true
+      showWalletPopup = false
+      window.location.href = 'https://your-gambling-app-url.com'
+    } else {
+      throw new Error('Failed to get wallet accounts')
+    }
+  } catch (error) {
+    console.error('Failed to connect wallet:', error)
+    alert('Failed to connect wallet. Please try again.')
+  }
+}
+
+// Update event listener
 window.addEventListener('keydown', (e) => {
-  if (showGamblingPopup && e.key.toLowerCase() === 'y') {
-    window.location.href = 'https://your-gambling-app-url.com'
+  if (showWalletPopup && e.key.toLowerCase() === 'c') {
+    // Connect Wonder wallet
+    connectWonderWallet()
   }
 })

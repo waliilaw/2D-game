@@ -6,12 +6,13 @@
     <title>Kings and Pigs</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/wonder-wallet-js@latest/dist/wonder-wallet.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.5/gsap.min.js"></script>
     <style>
         html, body {
             margin: 0;
             padding: 0;
-            width: 100%;
-            height: 100%;
+            width: 200%;
+            height: 200%;
             background-color: #000;
             overflow: hidden;
         }
@@ -26,10 +27,41 @@
             left: 50%;
             transform: translate(-50%, -50%);
         }
+        #controlPanel {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+        }
+        .musicButton {
+            background-color: #45283c;
+            border: 2px solid #eec39a;
+            color: white;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 12px;
+            padding: 8px 12px;
+            cursor: pointer;
+            outline: none;
+            margin-right: 10px;
+        }
+        .musicButton:hover {
+            background-color: #854c30;
+        }
+        .logo {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+        }
     </style>
 </head>
 <body>
     <canvas></canvas>
+    <div id="controlPanel">
+        <button id="toggleMusic" class="musicButton">Music: ON</button>
+        <img src="./img/image.png" class="logo" alt="Logo">
+    </div>
     <script src="./js/utils.js"></script>
     <script src="./js/data/collisions.js"></script>
     <script src="./js/classes/CollisionBlock.js"></script>
@@ -37,5 +69,18 @@
     <script src="./js/classes/Player.js"></script>
     <script src="./index.js"></script>
     <script src="./js/eventListeners.js"></script>
+    <script>
+        // Music toggle functionality
+        const toggleMusicBtn = document.getElementById('toggleMusic');
+        toggleMusicBtn.addEventListener('click', function() {
+            if (backgroundMusic.paused) {
+                backgroundMusic.play();
+                toggleMusicBtn.textContent = 'Music: ON';
+            } else {
+                backgroundMusic.pause();
+                toggleMusicBtn.textContent = 'Music: OFF';
+            }
+        });
+    </script>
 </body>
 </html>

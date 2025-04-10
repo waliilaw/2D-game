@@ -1,0 +1,13 @@
+{
+  "name": "kings-and-pigs",
+  "version": "1.0.0",
+  "description": "Kings and Pigs game",
+  "scripts": {
+    "start": "python3 -m http.server 8000",
+    "build": "echo 'No build step required'"
+  },
+  "dependencies": {},
+  "engines": {
+    "node": ">=14.x"
+  }
+} 

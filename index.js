@@ -617,17 +617,17 @@ function animate() {
   
   // Bottom border
   for(let x = 0; x < canvas.width; x += pixelSize) {
-    c.fillRect(x, canvas.height - borderWidth, pixelSize - 1, borderWidth);
+    c.fillRect(x, canvas.height - borderWidth, pixelSize - 3, borderWidth);
   }
   
   // Left border
   for(let y = 0; y < canvas.height; y += pixelSize) {
-    c.fillRect(0, y, borderWidth, pixelSize - 1);
+    c.fillRect(0, y, borderWidth, pixelSize - 3);
   }
   
   // Right border
   for(let y = 0; y < canvas.height; y += pixelSize) {
-    c.fillRect(canvas.width - borderWidth, y, borderWidth, pixelSize - 1);
+    c.fillRect(canvas.width - borderWidth, y, borderWidth, pixelSize - 3);
   }
 }
 

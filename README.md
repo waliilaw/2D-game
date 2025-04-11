@@ -1,4 +1,4 @@
-# Kings and Pigs
+# ArBet
 
 A simple 2D pixelated game with multiple rooms and a gambling mini-game feature.
 

@@ -23,11 +23,3 @@ Then visit http://localhost:8000 in your browser.
 ## Deployment
 
 This project is configured for deployment on Vercel. Simply push your changes and Vercel will automatically deploy from the main branch.
-
-### Deployment Steps
-1. Push your code to GitHub
-2. Connect Vercel to your GitHub repository
-3. Deploy your site
-
-## Note
-If you encounter a 404 error on Vercel, make sure the vercel.json file exists and is properly configured. 

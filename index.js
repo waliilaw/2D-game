@@ -659,10 +659,10 @@ async function connectWonderWallet() {
 // Function to navigate to game site
 function navigateToGame() {
   // Update redirection URL based on room
-  let redirectUrl = "https://your-gambling-app-url.com"
+  let redirectUrl = "https://arbet-mines_arlink.ar.io"
   switch(level) {
     case 1:
-      redirectUrl = "https://your-mines-game-url.com"
+      redirectUrl = "https://arbet-mines_arlink.ar.io"
       break
     case 2:
       redirectUrl = "https://your-egg-game-url.com"

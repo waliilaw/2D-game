@@ -657,7 +657,7 @@ function navigateToGame() {
       redirectUrl = "https://waliilaw-arbet-egg_arlink.arweave.net/";
       break;
     case 3:
-      redirectUrl = "https://waliilaw-arbet-roulette_arlink.arweave.net/";
+      redirectUrl = "https://ar-bet-roulette.vercel.app/";
       break;
   }
   

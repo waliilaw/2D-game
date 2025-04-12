@@ -220,10 +220,6 @@ const overlay = {
   opacity: 0,
 }
 
-// Add Arweave wallet state
-let isWalletConnected = false
-let hasPaid = false
-
 // Add custom room names
 const roomNames = {
   1: "Mines",
@@ -262,13 +258,6 @@ function updateGamblingBoxPosition() {
 let showWalletPopup = false;
 let showConfirmationDialog = false;
 let showIntroPopup = true; // Show intro popup by default
-let walletConnected = false;
-
-// This defines isWalletConnected before animate
-if (typeof isWalletConnected === 'undefined') {
-  // This will be overridden by wallet.js if it's loaded properly
-  let isWalletConnected = false;
-}
 
 function animate() {
   window.requestAnimationFrame(animate)
@@ -318,13 +307,8 @@ function animate() {
     Math.pow(player.position.y - gamblingBox.position.y, 2)
   )
 
-  // Check global wallet connection status from wallet.js
-  if (window.isWalletConnected !== undefined) {
-    isWalletConnected = window.isWalletConnected;
-  }
-
   if (distanceToGamblingBox < 100) {
-    if (!isWalletConnected) {
+    if (!window.isWalletConnected) {
       showWalletPopup = true;
       showConfirmationDialog = false;
     } else if (!showConfirmationDialog) {
@@ -622,10 +606,36 @@ function animate() {
 // Wonder wallet connection function
 async function connectWonderWallet() {
   try {
-    // Use our wallet.js connect function
-    await connectWallet();
+    // Use the globally exposed wallet connect function
+    if (typeof window.handleWalletConnect === 'function') {
+      await window.handleWalletConnect();
+    } else {
+      // Fallback for when wallet.js is not loaded properly
+      console.warn("Wallet connection function not found, using fallback");
+      
+      // Check if wander or arweave wallet is available
+      const wallet = window.wander || window.arweaveWallet;
+      if (!wallet) {
+        alert('Please install Wonder Wallet extension first!');
+        return;
+      }
+      
+      // Connect to wallet
+      await wallet.connect(['ACCESS_ADDRESS', 'SIGN_TRANSACTION', 'DISPATCH']);
+      const address = await wallet.getActiveAddress();
+      
+      if (address) {
+        window.isWalletConnected = true;
+        window.currentWalletAddress = address;
+        showWalletPopup = false;
+        showConfirmationDialog = true;
+      } else {
+        throw new Error('Failed to get wallet address');
+      }
+    }
     
-    if (isWalletConnected) {
+    // Update game state if wallet is connected
+    if (window.isWalletConnected) {
       showWalletPopup = false;
       showConfirmationDialog = true;
     }
@@ -652,9 +662,9 @@ function navigateToGame() {
   }
   
   // Pass wallet address to the game
-  if (isWalletConnected && currentWalletAddress) {
+  if (window.isWalletConnected && window.currentWalletAddress) {
     // Add wallet address as query parameter
-    redirectUrl += `?wallet=${currentWalletAddress}`;
+    redirectUrl += `?wallet=${window.currentWalletAddress}`;
   }
   
   window.location.href = redirectUrl;
@@ -674,8 +684,8 @@ window.addEventListener('keydown', (e) => {
   // Handle wallet connection popup
   else if (showWalletPopup && e.key.toLowerCase() === 'c') {
     // Connect wallet using our wallet.js function
-    if (window.connectWallet) {
-      window.connectWallet();
+    if (typeof window.handleWalletConnect === 'function') {
+      window.handleWalletConnect();
     } else {
       // Fallback to the original function if wallet.js is not loaded
       connectWonderWallet();

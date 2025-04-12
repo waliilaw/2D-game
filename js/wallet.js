@@ -1,12 +1,10 @@
-// Wallet state variables
-let isWalletConnected = false;
-let currentWalletAddress = '';
-let currentWalletBalance = '';
-
-// Expose wallet state globally
-window.isWalletConnected = isWalletConnected;
-window.currentWalletAddress = currentWalletAddress;
-window.currentWalletBalance = currentWalletBalance;
+// Wallet state variables - use existing globals if they exist
+// Check if the variable already exists in window to avoid redeclaration
+if (typeof window.isWalletConnected === 'undefined') {
+    window.isWalletConnected = false;
+    window.currentWalletAddress = '';
+    window.currentWalletBalance = '';
+}
 
 // DOM elements
 const connectWalletBtn = document.getElementById('connectWallet');
@@ -21,41 +19,42 @@ function initWallet() {
     checkWalletConnection();
     
     // Add event listeners
-    connectWalletBtn.addEventListener('click', connectWallet);
-    disconnectWalletBtn.addEventListener('click', disconnectWallet);
+    connectWalletBtn.addEventListener('click', handleWalletConnect);
+    disconnectWalletBtn.addEventListener('click', handleWalletDisconnect);
 }
 
 // Connect wallet function
-async function connectWallet() {
+async function handleWalletConnect() {
     try {
-        // Check if Wonder wallet is available
-        if (typeof window.ethereum === 'undefined') {
+        // Check if Wonder wallet is available (using window.wander which is the Arweave wallet)
+        if (typeof window.wander === 'undefined' && typeof window.arweaveWallet === 'undefined') {
             alert('Please install Wonder Wallet extension first!');
             return;
         }
 
-        // Request wallet connection
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        // Get the wallet interface (wander or arweaveWallet)
+        const wallet = window.wander || window.arweaveWallet;
         
-        if (accounts && accounts.length > 0) {
+        // Request wallet connection with proper permissions
+        await wallet.connect(['ACCESS_ADDRESS', 'SIGN_TRANSACTION', 'DISPATCH']);
+        
+        // Get wallet address
+        const address = await wallet.getActiveAddress();
+        
+        if (address) {
             // Set wallet state
-            currentWalletAddress = accounts[0];
+            window.currentWalletAddress = address;
             await updateWalletBalance();
             
             // Save connection state
             localStorage.setItem('walletConnected', 'true');
-            localStorage.setItem('walletAddress', currentWalletAddress);
+            localStorage.setItem('walletAddress', address);
             
             // Update UI
             updateWalletUI(true);
-            isWalletConnected = true;
-            
-            // Update global state
             window.isWalletConnected = true;
-            window.currentWalletAddress = currentWalletAddress;
-            window.currentWalletBalance = currentWalletBalance;
         } else {
-            throw new Error('Failed to get wallet accounts');
+            throw new Error('Failed to get wallet address');
         }
     } catch (error) {
         console.error('Failed to connect wallet:', error);
@@ -64,14 +63,17 @@ async function connectWallet() {
 }
 
 // Disconnect wallet function
-async function disconnectWallet() {
+async function handleWalletDisconnect() {
     try {
-        // Clear wallet state
-        isWalletConnected = false;
-        currentWalletAddress = '';
-        currentWalletBalance = '';
+        // Get the wallet interface
+        const wallet = window.wander || window.arweaveWallet;
         
-        // Update global state
+        if (wallet) {
+            // Disconnect wallet
+            await wallet.disconnect();
+        }
+        
+        // Clear wallet state
         window.isWalletConnected = false;
         window.currentWalletAddress = '';
         window.currentWalletBalance = '';
@@ -90,15 +92,14 @@ async function disconnectWallet() {
 // Update wallet balance
 async function updateWalletBalance() {
     try {
-        if (!currentWalletAddress) return;
+        if (!window.currentWalletAddress) return;
         
-        // Mock balance for now - in a real implementation,
-        // this would fetch the balance from Arweave
-        currentWalletBalance = (Math.random() * 10).toFixed(4);
-        window.currentWalletBalance = currentWalletBalance;
+        // For Arweave, we'd normally fetch balance from Arweave network
+        // For now, use mock balance
+        const mockBalance = (Math.random() * 10).toFixed(4);
+        window.currentWalletBalance = mockBalance;
     } catch (error) {
         console.error('Failed to update wallet balance:', error);
-        currentWalletBalance = '0.00';
         window.currentWalletBalance = '0.00';
     }
 }
@@ -109,12 +110,8 @@ function checkWalletConnection() {
     const savedAddress = localStorage.getItem('walletAddress');
     
     if (wasConnected && savedAddress) {
-        currentWalletAddress = savedAddress;
-        isWalletConnected = true;
-        
-        // Update global state
+        window.currentWalletAddress = savedAddress;
         window.isWalletConnected = true;
-        window.currentWalletAddress = currentWalletAddress;
         
         // Update UI and fetch balance
         updateWalletUI(true);
@@ -129,8 +126,8 @@ function updateWalletUI(connected) {
     if (connected) {
         connectWalletBtn.style.display = 'none';
         walletInfoDiv.style.display = 'flex';
-        walletAddressSpan.textContent = truncateAddress(currentWalletAddress);
-        walletBalanceSpan.textContent = formatArAmount(currentWalletBalance) + ' AR';
+        walletAddressSpan.textContent = truncateAddress(window.currentWalletAddress);
+        walletBalanceSpan.textContent = formatArAmount(window.currentWalletBalance) + ' AR';
     } else {
         connectWalletBtn.style.display = 'block';
         walletInfoDiv.style.display = 'none';
@@ -141,15 +138,25 @@ function updateWalletUI(connected) {
 document.addEventListener('DOMContentLoaded', initWallet);
 
 // Listen for account changes
-if (window.ethereum) {
-    window.ethereum.on('accountsChanged', async (accounts) => {
-        if (accounts.length === 0) {
-            // User disconnected wallet
-            disconnectWallet();
+if (window.wander) {
+    window.wander.on('walletSwitch', async (address) => {
+        if (address) {
+            window.currentWalletAddress = address;
+            await updateWalletBalance();
+            updateWalletUI(true);
         } else {
-            // Account changed
-            currentWalletAddress = accounts[0];
-            window.currentWalletAddress = currentWalletAddress;
+            handleWalletDisconnect();
+        }
+    });
+} else if (window.arweaveWallet) {
+    window.arweaveWallet.on('disconnect', () => {
+        handleWalletDisconnect();
+    });
+    
+    window.arweaveWallet.on('connect', async () => {
+        const address = await window.arweaveWallet.getActiveAddress();
+        if (address) {
+            window.currentWalletAddress = address;
             await updateWalletBalance();
             updateWalletUI(true);
         }
@@ -157,5 +164,5 @@ if (window.ethereum) {
 }
 
 // Expose wallet functions globally
-window.connectWallet = connectWallet;
-window.disconnectWallet = disconnectWallet; 
+window.handleWalletConnect = handleWalletConnect;
+window.handleWalletDisconnect = handleWalletDisconnect; 

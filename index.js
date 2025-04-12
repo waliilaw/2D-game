@@ -264,6 +264,12 @@ let showConfirmationDialog = false;
 let showIntroPopup = true; // Show intro popup by default
 let walletConnected = false;
 
+// This defines isWalletConnected before animate
+if (typeof isWalletConnected === 'undefined') {
+  // This will be overridden by wallet.js if it's loaded properly
+  let isWalletConnected = false;
+}
+
 function animate() {
   window.requestAnimationFrame(animate)
 
@@ -312,17 +318,22 @@ function animate() {
     Math.pow(player.position.y - gamblingBox.position.y, 2)
   )
 
+  // Check global wallet connection status from wallet.js
+  if (window.isWalletConnected !== undefined) {
+    isWalletConnected = window.isWalletConnected;
+  }
+
   if (distanceToGamblingBox < 100) {
     if (!isWalletConnected) {
-      showWalletPopup = true
-      showConfirmationDialog = false
+      showWalletPopup = true;
+      showConfirmationDialog = false;
     } else if (!showConfirmationDialog) {
-      showConfirmationDialog = true
-      showWalletPopup = false
+      showConfirmationDialog = true;
+      showWalletPopup = false;
     }
   } else {
-    showWalletPopup = false
-    showConfirmationDialog = false
+    showWalletPopup = false;
+    showConfirmationDialog = false;
   }
 
   // Draw intro popup
@@ -401,108 +412,85 @@ function animate() {
   // Draw improved wallet connection popup
   if (showWalletPopup) {
     // Create semi-transparent overlay
-    c.fillStyle = 'rgba(0, 0, 0, 0.7)'
-    c.fillRect(0, 0, canvas.width, canvas.height)
+    c.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    c.fillRect(0, 0, canvas.width, canvas.height);
     
     // Draw popup background
-    c.fillStyle = '#45283c' // Dark purple background
-    c.fillRect(canvas.width/2 - 200, canvas.height/2 - 150, 400, 300)
+    c.fillStyle = '#45283c'; // Dark purple background
+    c.fillRect(canvas.width/2 - 200, canvas.height/2 - 150, 400, 300);
     
     // Draw pixelated border
-    c.fillStyle = '#eec39a' // Light tan color for border
+    c.fillStyle = '#eec39a'; // Light tan color for border
     
     // Draw top and bottom borders with pixels
     for(let x = 0; x < 400; x += 8) {
       // Top border pixels
-      c.fillRect(canvas.width/2 - 200 + x, canvas.height/2 - 150, 6, 6)
+      c.fillRect(canvas.width/2 - 200 + x, canvas.height/2 - 150, 6, 6);
       // Bottom border pixels
-      c.fillRect(canvas.width/2 - 200 + x, canvas.height/2 + 150 - 6, 6, 6)
+      c.fillRect(canvas.width/2 - 200 + x, canvas.height/2 + 150 - 6, 6, 6);
     }
     
     // Draw left and right borders with pixels
     for(let y = 0; y < 300; y += 8) {
       // Left border pixels
-      c.fillRect(canvas.width/2 - 200, canvas.height/2 - 150 + y, 6, 6)
+      c.fillRect(canvas.width/2 - 200, canvas.height/2 - 150 + y, 6, 6);
       // Right border pixels
-      c.fillRect(canvas.width/2 + 200 - 6, canvas.height/2 - 150 + y, 6, 6)
+      c.fillRect(canvas.width/2 + 200 - 6, canvas.height/2 - 150 + y, 6, 6);
     }
     
     // Draw title based on current room - with better text handling
-    c.fillStyle = '#ffffff'
-    c.font = '16px "Press Start 2P"' // Start with smaller font size
-    let popupTitle = `Enter ${roomNames[level]}`
+    c.fillStyle = '#ffffff';
+    c.font = '16px "Press Start 2P"'; // Start with smaller font size
+    let popupTitle = `Enter ${roomNames[level]}`;
     
-    let textMetrics = c.measureText(popupTitle)
+    let textMetrics = c.measureText(popupTitle);
     // If text is still too long, shorten it
     if (textMetrics.width > 330) {
       popupTitle = `${roomNames[level]}`;
-      c.font = '16px "Press Start 2P"'
-      textMetrics = c.measureText(popupTitle)
+      c.font = '16px "Press Start 2P"';
+      textMetrics = c.measureText(popupTitle);
     }
     
-    c.fillText(popupTitle, canvas.width/2 - textMetrics.width/2, canvas.height/2 - 80)
+    c.fillText(popupTitle, canvas.width/2 - textMetrics.width/2, canvas.height/2 - 80);
     
     // Draw pixelated line separator
-    c.fillStyle = '#eec39a'
+    c.fillStyle = '#eec39a';
     for(let x = 0; x < 350; x += 8) {
-      c.fillRect(canvas.width/2 - 175 + x, canvas.height/2 - 50, 6, 2)
+      c.fillRect(canvas.width/2 - 175 + x, canvas.height/2 - 50, 6, 2);
     }
     
     // Draw popup message with better text handling
-    c.fillStyle = '#ffffff'
-    c.font = '14px "Press Start 2P"' // Start with smaller font
-    let descText
+    c.fillStyle = '#ffffff';
+    c.font = '14px "Press Start 2P"'; // Start with smaller font
+    let descText;
     switch(level) {
       case 1:
-        descText = "Connect wallet for Mines"
-        break
+        descText = "Connect wallet for Mines";
+        break;
       case 2:
-        descText = "Connect wallet for Egg"
-        break
+        descText = "Connect wallet for Egg";
+        break;
       case 3:
-        descText = "Connect wallet for Roulette"
-        break
+        descText = "Connect wallet for Roulette";
+        break;
     }
     
-    textMetrics = c.measureText(descText)
-    if (textMetrics.width > 330) {
-      // Further shorten if needed
-      descText = descText.substring(0, 20) + "..."
-      textMetrics = c.measureText(descText)
-    }
-    
-    c.fillText(descText, canvas.width/2 - textMetrics.width/2, canvas.height/2)
+    textMetrics = c.measureText(descText);
+    c.fillText(descText, canvas.width/2 - textMetrics.width/2, canvas.height/2);
     
     // Draw call to action
-    c.fillStyle = '#eec39a' // Highlight color
-    c.font = '14px "Press Start 2P"'
-    const ctaText = "Press C to connect"
-    textMetrics = c.measureText(ctaText)
-    c.fillText(ctaText, canvas.width/2 - textMetrics.width/2, canvas.height/2 + 60)
+    c.fillStyle = '#eec39a'; // Highlight color
+    c.font = '16px "Press Start 2P"';
+    const ctaText = "Press C to connect wallet";
+    textMetrics = c.measureText(ctaText);
+    c.fillText(ctaText, canvas.width/2 - textMetrics.width/2, canvas.height/2 + 80);
     
-    // Draw pixelated button
-    const buttonWidth = 180
-    const buttonHeight = 40
-    c.fillStyle = '#854c30' // Button background
-    c.fillRect(canvas.width/2 - buttonWidth/2, canvas.height/2 + 90, buttonWidth, buttonHeight)
-    
-    // Button border pixels
-    c.fillStyle = '#d95763' // Bright accent for button
-    for(let x = 0; x < buttonWidth; x += 6) {
-      c.fillRect(canvas.width/2 - buttonWidth/2 + x, canvas.height/2 + 90, 4, 4)
-      c.fillRect(canvas.width/2 - buttonWidth/2 + x, canvas.height/2 + 90 + buttonHeight - 4, 4, 4)
-    }
-    for(let y = 0; y < buttonHeight; y += 6) {
-      c.fillRect(canvas.width/2 - buttonWidth/2, canvas.height/2 + 90 + y, 4, 4)
-      c.fillRect(canvas.width/2 - buttonWidth/2 + buttonWidth - 4, canvas.height/2 + 90 + y, 4, 4)
-    }
-    
-    // Draw button text
-    c.fillStyle = '#ffffff'
-    c.font = '14px "Press Start 2P"'
-    const buttonText = "CONNECT"
-    textMetrics = c.measureText(buttonText)
-    c.fillText(buttonText, canvas.width/2 - textMetrics.width/2, canvas.height/2 + 90 + buttonHeight/2 + 5)
+    // Alternative action
+    c.fillStyle = '#ffffff'; // White color
+    c.font = '12px "Press Start 2P"';
+    const altText = "or use the wallet button in the top right";
+    const altTextMetrics = c.measureText(altText);
+    c.fillText(altText, canvas.width/2 - altTextMetrics.width/2, canvas.height/2 + 110);
   }
 
   // Draw confirmation dialog after wallet is connected
@@ -634,74 +622,76 @@ function animate() {
 // Wonder wallet connection function
 async function connectWonderWallet() {
   try {
-    // Check if Wonder wallet is available
-    if (typeof window.ethereum === 'undefined') {
-      alert('Please install Wonder Wallet extension first!')
-      return
-    }
-
-    // Request wallet connection
-    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
+    // Use our wallet.js connect function
+    await connectWallet();
     
-    if (accounts && accounts.length > 0) {
-      isWalletConnected = true
-      showWalletPopup = false
-      showConfirmationDialog = true
-    } else {
-      throw new Error('Failed to get wallet accounts')
+    if (isWalletConnected) {
+      showWalletPopup = false;
+      showConfirmationDialog = true;
     }
   } catch (error) {
-    console.error('Failed to connect wallet:', error)
-    alert('Failed to connect wallet. Please try again.')
+    console.error('Failed to connect wallet:', error);
+    alert('Failed to connect wallet. Please try again.');
   }
 }
 
 // Function to navigate to game site
 function navigateToGame() {
   // Update redirection URL based on room
-  let redirectUrl = "https://arbet-mines_arlink.ar.io"
+  let redirectUrl = "https://waliilaw-arbet-mines_arlink.arweave.net/";
   switch(level) {
     case 1:
-      redirectUrl = "https://arbet-mines_arlink.ar.io"
-      break
+      redirectUrl = "https://waliilaw-arbet-mines_arlink.arweave.net/";
+      break;
     case 2:
-      redirectUrl = "https://your-egg-game-url.com"
-      break
+      redirectUrl = "https://waliilaw-arbet-egg_arlink.arweave.net/";
+      break;
     case 3:
-      redirectUrl = "https://your-roulette-game-url.com"
-      break
+      redirectUrl = "https://waliilaw-arbet-roulette_arlink.arweave.net/";
+      break;
   }
   
-  window.location.href = redirectUrl
+  // Pass wallet address to the game
+  if (isWalletConnected && currentWalletAddress) {
+    // Add wallet address as query parameter
+    redirectUrl += `?wallet=${currentWalletAddress}`;
+  }
+  
+  window.location.href = redirectUrl;
 }
 
 // Update event listener
 window.addEventListener('keydown', (e) => {
   // Try to start music if paused (first interaction)
   if (window.backgroundMusic.paused) {
-    startBackgroundMusic()
+    startBackgroundMusic();
   }
   
   // Close intro popup with C key
   if (showIntroPopup && e.key.toLowerCase() === 'c') {
-    showIntroPopup = false
+    showIntroPopup = false;
   }
   // Handle wallet connection popup
   else if (showWalletPopup && e.key.toLowerCase() === 'c') {
-    // Connect Wonder wallet
-    connectWonderWallet()
+    // Connect wallet using our wallet.js function
+    if (window.connectWallet) {
+      window.connectWallet();
+    } else {
+      // Fallback to the original function if wallet.js is not loaded
+      connectWonderWallet();
+    }
   } 
   // Handle confirmation popup
   else if (showConfirmationDialog) {
     if (e.key.toLowerCase() === 'y') {
       // User confirmed, navigate to game
-      navigateToGame()
+      navigateToGame();
     } else if (e.key.toLowerCase() === 'n') {
       // User declined, close dialog
-      showConfirmationDialog = false
+      showConfirmationDialog = false;
     }
   }
-})
+});
 
 // Initialize the first level
 levels[level].init()

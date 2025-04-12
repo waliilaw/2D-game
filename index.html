@@ -54,10 +54,69 @@
             height: 50px;
             object-fit: contain;
         }
+        /* Wallet display styles */
+        #walletDisplay {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+        .walletButton {
+            background-color: #45283c;
+            border: 2px solid #eec39a;
+            color: white;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 10px;
+            padding: 8px 12px;
+            cursor: pointer;
+            outline: none;
+            margin-bottom: 10px;
+        }
+        .walletButton:hover {
+            background-color: #854c30;
+        }
+        .walletInfo {
+            background-color: rgba(69, 40, 60, 0.8);
+            border: 2px solid #eec39a;
+            padding: 8px 12px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .disconnectButton {
+            background-color: #8c2022;
+            border: 2px solid #eec39a;
+            color: white;
+            font-family: 'Press Start 2P', monospace;
+            font-size: 8px;
+            padding: 5px 8px;
+            cursor: pointer;
+            outline: none;
+            align-self: center;
+            margin-top: 5px;
+        }
+        .disconnectButton:hover {
+            background-color: #b22222;
+        }
     </style>
 </head>
 <body>
     <canvas></canvas>
+    <!-- Wallet Display -->
+    <div id="walletDisplay">
+        <button id="connectWallet" class="walletButton">CONNECT WALLET</button>
+        <div id="walletInfo" class="walletInfo" style="display: none;">
+            <div>ADDRESS: <span id="walletAddress">0x0000...0000</span></div>
+            <div>BALANCE: <span id="walletBalance">0.00 AR</span></div>
+            <button id="disconnectWallet" class="disconnectButton">DISCONNECT</button>
+        </div>
+    </div>
     <div id="controlPanel">
         <img src="./img/image.png" class="logo" alt="Logo">
         <button id="toggleMusic" class="musicButton">Music: ON</button>
@@ -69,6 +128,7 @@
     <script src="./js/classes/Player.js"></script>
     <script src="./index.js"></script>
     <script src="./js/eventListeners.js"></script>
+    <script src="./js/wallet.js"></script>
     <script>
         // Music toggle functionality - wait for backgroundMusic to be loaded
         document.addEventListener('DOMContentLoaded', function() {

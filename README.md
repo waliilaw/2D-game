@@ -10,6 +10,12 @@ A simple 2D pixelated game with multiple rooms and a gambling mini-game feature.
 - Web3 wallet integration
 - Background music
 
+## Links 
+
+- Mines : https://waliilaw-arbet-mines_arlink.arweave.net/
+- Roulette : 
+-Egg : 
+
 ## Local Development
 
 To run this project locally:
@@ -19,7 +25,3 @@ python3 -m http.server 8000
 ```
 
 Then visit http://localhost:8000 in your browser.
-
-## Deployment
-
-This project is configured for deployment on Vercel. Simply push your changes and Vercel will automatically deploy from the main branch.

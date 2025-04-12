@@ -1,5 +1,9 @@
 # ArBet
 
+
+https://github.com/user-attachments/assets/3935321b-30db-432b-a6ae-79ab0732efa0
+
+
 A simple 2D pixelated game with multiple rooms and a gambling mini-game feature.
 
 ## Features

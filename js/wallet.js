@@ -97,7 +97,7 @@ async function updateWalletBalance() {
         // For Arweave, we'd normally fetch balance from Arweave network
         // For now, use mock balance
         const mockBalance = (Math.random() * 10).toFixed(4);
-        window.currentWalletBalance = mockBalance;
+        window.currentWalletBalance = 0;
     } catch (error) {
         console.error('Failed to update wallet balance:', error);
         window.currentWalletBalance = '0.00';

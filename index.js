@@ -465,14 +465,14 @@ function animate() {
     // Draw call to action
     c.fillStyle = '#eec39a'; // Highlight color
     c.font = '16px "Press Start 2P"';
-    const ctaText = "Press C to connect wallet";
+    const ctaText = "Press C to connect";
     textMetrics = c.measureText(ctaText);
     c.fillText(ctaText, canvas.width/2 - textMetrics.width/2, canvas.height/2 + 80);
     
     // Alternative action
     c.fillStyle = '#ffffff'; // White color
     c.font = '12px "Press Start 2P"';
-    const altText = "or use the wallet button in the top right";
+    const altText = "";
     const altTextMetrics = c.measureText(altText);
     c.fillText(altText, canvas.width/2 - altTextMetrics.width/2, canvas.height/2 + 110);
   }

@@ -16,8 +16,8 @@ A simple 2D pixelated game with multiple rooms and a gambling mini-game feature.
 
 ## Links 
 
-- Mines : https://waliilaw-arbet-mines_arlink.arweave.net/
-- Roulette : 
+- Mines : https://github.com/waliilaw/ArBet-mines
+- Roulette : https://github.com/waliilaw/ArBet-roulette
 -Egg : 
 
 ## Local Development
